@@ -51,8 +51,13 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 uint32_t mn=0;
 uint32_t count=0;
-uint16_t ADCBuffer[10];
+uint16_t ADCBuffer[300];
 uint64_t hpmn=0;
+uint8_t ADCChannels = 3;
+uint8_t ADCCount = 100;
+uint16_t ADCBuffer[300];
+uint32_t AVG[3];
+uint64_t channelSums[3] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,8 +112,7 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
-
-  HAL_ADC_Start_DMA(&hadc1, ADCBuffer, 10);
+  HAL_ADC_Start_DMA(&hadc1, ADCBuffer, 300);
   HAL_TIM_Base_Start(&htim3);
   /* USER CODE END 2 */
 
@@ -121,6 +125,18 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  mn = __HAL_TIM_GET_COUNTER(&htim2);
 	  hpmn = ((count-1)*4294967295)+mn;
+
+	  HAL_Delay(300);
+	  channelSums[0] = 0;
+	  channelSums[1] = 0;
+	  channelSums[2] = 0;
+
+	  for (int i=0; i< ADCChannels; i++) {
+		  for (int j=0; j < ADCCount; j++) {
+			  channelSums[i] += ADCBuffer[i+j*ADCChannels];
+		  }
+		  AVG[i] = channelSums[i] / ADCCount;
+	  }
   }
   /* USER CODE END 3 */
 }
